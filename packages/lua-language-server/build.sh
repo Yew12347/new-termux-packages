@@ -33,8 +33,8 @@ obtain_deb_url() {
 		PAGE="$(curl -s "$url")"
 		deb_url="$(grep -oE 'https?://.*\.deb' <<< "$PAGE" | head -n1)"
 		if [[ -n "$deb_url" ]]; then
-				echo "$deb_url"
-				return 0
+			echo "$deb_url"
+			return 0
 		else
 			>&2 echo "Attempt $attempt: Failed to obtain deb URL. Retrying in $wait seconds..."
 		fi
@@ -48,11 +48,9 @@ _install_ubuntu_packages() {
 	# install Ubuntu packages, like in the aosp-libs build.sh
 	export HOSTBUILD_ROOTFS="${TERMUX_PKG_HOSTBUILD_DIR}/ubuntu_packages"
 	mkdir -p "${HOSTBUILD_ROOTFS}"
-	local URL DEB_NAME DEB_LIST
+	local URL DEB_NAME i
 
-	DEB_LIST="$@"
-
-	for i in $DEB_LIST; do
+	for i in "$@"; do
 		echo "deb: $i"
 		URL="$(obtain_deb_url "$i")"
 		DEB_NAME="${URL##*/}"
@@ -118,8 +116,10 @@ termux_step_make() {
 
 	patch="$TERMUX_PKG_BUILDER_DIR/force-cast-unw_context_t.diff"
 	echo "Applying patch: $(basename "$patch")"
-	patch --silent -p1 -d "$TERMUX_PKG_SRCDIR/3rd/bee.lua/bee/crash/linux" < "$patch"
-	patch --silent -p1 -d "$TERMUX_PKG_SRCDIR/3rd/luamake/bee.lua/bee/crash" < "$patch"
+	test -f "$patch" && {
+		patch --silent -p1 -d "$TERMUX_PKG_SRCDIR/3rd/bee.lua/bee/crash/linux" < "$patch"
+		patch --silent -p1 -d "$TERMUX_PKG_SRCDIR/3rd/luamake/bee.lua/bee/crash" < "$patch"
+	}
 
 	"${TERMUX_PKG_HOSTBUILD_DIR}"/3rd/luamake/luamake \
 		-cc "${CC}" \
