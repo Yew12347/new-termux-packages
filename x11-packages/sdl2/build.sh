@@ -46,6 +46,7 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 --enable-video-x11-xinput
 --enable-video-x11-xrandr
 --enable-video-x11-xshape
+--enable-static
 --x-includes=${TERMUX_PREFIX}/include
 --x-libraries=${TERMUX_PREFIX}/lib
 "
