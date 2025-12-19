@@ -24,4 +24,5 @@ TERMUX_PKG_EXTRA_CONFIGURE_ARGS="
 --enable-music-mp3-mpg123
 --disable-music-mp3-mpg123-shared
 --disable-music-opus-shared
+--enable-static
 "
