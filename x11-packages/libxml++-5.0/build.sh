@@ -1,0 +1,9 @@
+TERMUX_PKG_HOMEPAGE=https://libxmlplusplus.github.io/libxmlplusplus/
+TERMUX_PKG_DESCRIPTION="A C++ wrapper for the libxml2 XML parser library (version 5.0)"
+TERMUX_PKG_LICENSE="LGPL-2.1"
+TERMUX_PKG_MAINTAINER="@IntinteDAO"
+_MAJOR_VERSION=5.0
+TERMUX_PKG_VERSION=${_MAJOR_VERSION}.4
+TERMUX_PKG_SRCURL=https://download.gnome.org/sources/libxml++/${_MAJOR_VERSION}/libxml++-${TERMUX_PKG_VERSION}.tar.xz
+TERMUX_PKG_SHA256=42891b7863d2ccf4d7bf029f06fe3a52a4376c94bbba91f8945e48520ffae82f
+TERMUX_PKG_DEPENDS="libxml2"
