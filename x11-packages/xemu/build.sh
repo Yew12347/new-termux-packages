@@ -78,9 +78,6 @@ termux_step_configure() {
 
 	CONFIGURE_FLAGS="
 	--prefix=$TERMUX_PREFIX
-	--enable-opengl
-	--enable-vulkan
-	--disable-glx
 	--disable-stack-protector
 	--disable-vte
 	--disable-vnc-sasl
