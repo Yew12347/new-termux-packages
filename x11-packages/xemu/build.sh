@@ -78,7 +78,6 @@ termux_step_configure() {
 
 	CONFIGURE_FLAGS="
 	--prefix=$TERMUX_PREFIX
-	--enable-egl
 	--enable-opengl
 	--enable-vulkan
 	--disable-glx
