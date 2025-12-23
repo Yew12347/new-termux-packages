@@ -16,13 +16,13 @@ TERMUX_PKG_BUILD_DEPENDS="gtk3, libepoxy, libglvnd-dev, libpcap, libpixman, libs
 
 # ---------------- SOURCE ----------------
 termux_step_get_source() {
-	mkdir -p "xemubuild"
-	cd "xemubuild"
-	git clone https://github.com/xemu-project/xemu.git .
-	git checkout master
+	mkdir -p "$TERMUX_PKG_SRCDIR"
+	cd "$TERMUX_PKG_SRCDIR"
+	git clone https://github.com/xemu-project/xemu
+	cd xemu
 	git submodule update --init --recursive
+	mv * .* ../
 }
-
 # ---------------- PRE-CONFIGURE ----------------
 termux_step_pre_configure() {
 	termux_setup_meson
