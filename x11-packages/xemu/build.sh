@@ -103,7 +103,7 @@ EOF
 termux_step_install_license() {
 	install -Dm644 dist/LICENSE.txt \
 		"$TERMUX_PREFIX/share/doc/xemu/LICENSE"
-}		mkdir -p _lib _setjmp-aarch64/private
+}
 
 		pushd _setjmp-aarch64
 		for s in $TERMUX_PKG_BUILDER_DIR/setjmp-aarch64/{setjmp.S,private-*.h}; do
