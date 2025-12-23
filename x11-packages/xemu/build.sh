@@ -30,7 +30,7 @@ termux_step_pre_configure() {
 
 # ---------------- CONFIGURE (MESON) ----------------
 termux_step_configure() {
-    CFLAGS+=" -DANDROID -DEGL_NO_X11 -DXBOX=1"
+    CFLAGS+=" -DANDROID -DXBOX=1"
     CXXFLAGS+=" $CFLAGS"
     LDFLAGS+=" -llog -landroid-shmem"
 
