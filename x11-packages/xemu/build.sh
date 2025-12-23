@@ -12,7 +12,7 @@ TERMUX_PKG_BLACKLISTED_ARCHES="arm, i686, x86_64"
 
 TERMUX_PKG_DEPENDS="libandroid-shmem, libc++, sdl2, mesa, zlib, freetype, glib, fontconfig, harfbuzz, pango, libpng, libjpeg-turbo"
 
-TERMUX_PKG_BUILD_DEPENDS="meson, ninja, vulkan-headers, xorgproto, libglvnd-dev, sdl2"
+TERMUX_PKG_BUILD_DEPENDS="ninja, vulkan-headers, xorgproto, libglvnd-dev, sdl2"
 
 # ---------------- SOURCE ----------------
 termux_step_get_source() {
