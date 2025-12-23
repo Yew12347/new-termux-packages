@@ -10,9 +10,9 @@ TERMUX_PKG_AUTO_UPDATE=false
 TERMUX_PKG_SKIP_SRC_EXTRACT=true
 TERMUX_PKG_BLACKLISTED_ARCHES="arm, i686, x86_64"
 
-TERMUX_PKG_DEPENDS="at-spi2-core, brotli, fontconfig, freetype, fribidi, gdk-pixbuf, glib, harfbuzz, libandroid-shmem, libandroid-support, libbz2, libc++, libcairo, libdecor, libepoxy, libexpat, libffi, libgraphite, libiconv, libjpeg-turbo, libpcap, libpixman, libpng, libsamplerate, libslirp, libwayland, libx11, libxau, libxcb, libxcomposite, libxcursor, libxdamage, libxdmcp, libxext, libxfixes, libxi, libxinerama, libxkbcommon, libxrandr, libxrender, libxss, mesa, openssl, pango, pcre2, sdl2, zlib"
+TERMUX_PKG_DEPENDS="libandroid-shmem, libc++, sdl2, mesa, zlib, freetype, glib, fontconfig, harfbuzz, pango, libpng, libjpeg-turbo"
 
-TERMUX_PKG_BUILD_DEPENDS="gtk3, libepoxy, libglvnd-dev, libpcap, libpixman, libsamplerate, libslirp, libtasn1, sdl2, vulkan-headers, xorgproto"
+TERMUX_PKG_BUILD_DEPENDS="meson, ninja, vulkan-headers, xorgproto, libglvnd-dev, sdl2"
 
 # ---------------- SOURCE ----------------
 termux_step_get_source() {
@@ -26,8 +26,6 @@ termux_step_get_source() {
 termux_step_pre_configure() {
     termux_setup_meson
     termux_setup_ninja
-    termux_setup_python_pip
-    pip install --upgrade pyyaml
 }
 
 # ---------------- CONFIGURE (MESON) ----------------
@@ -42,12 +40,11 @@ termux_step_configure() {
         -Ddefault_targets=i386-softmmu \
         -Dopengl=enabled \
         -Degl=enabled \
-        -Dglx=disabled \
+        -Dglx=enabled \
         -Dsdl=enabled \
         -Dgtk=disabled \
         -Dvte=disabled \
         -Dvnc=disabled \
-        -Dvnc_sasl=disabled \
         -Dxen=disabled \
         -Dxen_pci_passthrough=disabled \
         -Dhvf=disabled \
@@ -61,28 +58,20 @@ termux_step_configure() {
         -Dtrace_backends=nop \
         -Dstack_protector=disabled \
         -Dwerror=false \
-        -Db_c_args="-DXBOX=1 -DANDROID -DEGL_NO_X11" \
-        -Db_cpp_args="-DXBOX=1 -DANDROID -DEGL_NO_X11"
+        -Db_c_args="-DXBOX=1 -DANDROID \
+        -Db_cpp_args="-DXBOX=1 -DANDROID
 }
 
 # ---------------- BUILD ----------------
 termux_step_make() {
-    ninja -C build qemu-system-i386
+    ninja -C build -j$(nproc) qemu-system-i386
 
     mkdir -p dist
     mv build/qemu-system-i386 dist/xemu
 
-    # Generate license
-    python3 scripts/gen-license.py > dist/LICENSE.txt
-
-    # Create iso2xiso helper script
-    sed "s|@TERMUX_PREFIX@|$TERMUX_PREFIX|g" \
-        "$TERMUX_PKG_BUILDER_DIR/iso2xiso.in" > dist/iso2xiso
-    chmod +x dist/iso2xiso
-
-    # Download BIOS/ROM/HDD images
+    # Download BIOS/HDD images
     termux_download \
-        "https://archive.org/download/xemustarter/XEMU%20FILES.zip/XEMU%20FILES%2FBoot%20ROM%20Image%2Fmcpx_1.0.bin" \
+        "https://archive.org/download/xemustarter/XEMU%20FILES.zip/XEMU%20FILES%2FBoot%20ROM%2Fmcpx_1.0.bin" \
         dist/mcpx_1.0.bin \
         e99e3a772bf5f5d262786aee895664eb96136196e37732fe66e14ae062f20335
 
@@ -101,26 +90,7 @@ termux_step_make() {
 
 # ---------------- INSTALL ----------------
 termux_step_make_install() {
-    install -Dm755 dist/xemu "$TERMUX_PREFIX/libexec/xemu-bin"
-
-    cat > "$TERMUX_PREFIX/bin/xemu" <<'EOF'
-#!/data/data/com.termux/files/usr/bin/bash
-export QEMU_GL=egl
-export SDL_RENDER_DRIVER=vulkan
-export VK_ICD_FILENAMES=$PREFIX/share/vulkan/icd.d/turnip_icd.json
-export MESA_LOADER_DRIVER_OVERRIDE=zink
-export GALLIUM_DRIVER=zink
-exec $PREFIX/libexec/xemu-bin -vulkan "$@"
-EOF
-    chmod +x "$TERMUX_PREFIX/bin/xemu"
-
-    install -Dm755 dist/iso2xiso "$TERMUX_PREFIX/bin/iso2xiso"
+    install -Dm755 dist/xemu "$TERMUX_PREFIX/bin/xemu"
     install -Dm644 dist/*.bin "$TERMUX_PREFIX/share/xemu"
     install -Dm644 dist/xbox_hdd.qcow2 "$TERMUX_PREFIX/share/xemu"
-}
-
-# ---------------- INSTALL LICENSE ----------------
-termux_step_install_license() {
-    install -Dm644 dist/LICENSE.txt \
-        "$TERMUX_PREFIX/share/doc/xemu/LICENSE"
 }
