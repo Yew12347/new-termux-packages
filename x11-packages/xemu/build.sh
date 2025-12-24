@@ -8,7 +8,7 @@ TERMUX_PKG_SRCURL="https://github.com/xemu-project/xemu.git"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_AUTO_UPDATE=false
 TERMUX_PKG_SKIP_SRC_EXTRACT=true
-TERMUX_PKG_BLACKLISTED_ARCHES="arm, i686, x86_64"
+TERMUX_PKG_BLACKLISTED_ARCHES="i686, x86_64"
 
 TERMUX_PKG_DEPENDS="libandroid-shmem, libc++, sdl2, mesa, zlib, freetype, glib, fontconfig, harfbuzz, pango, libpng, libjpeg-turbo"
 
