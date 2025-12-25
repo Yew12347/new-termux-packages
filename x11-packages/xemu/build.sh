@@ -8,10 +8,8 @@ TERMUX_PKG_SRCURL="https://github.com/xemu-project/xemu.git"
 TERMUX_PKG_BUILD_IN_SRC=true
 TERMUX_PKG_AUTO_UPDATE=false
 TERMUX_PKG_SKIP_SRC_EXTRACT=true
-TERMUX_PKG_BLACKLISTED_ARCHES="i686, x86_64"
 
 TERMUX_PKG_DEPENDS="libandroid-shmem, libc++, sdl2, mesa, zlib, freetype, glib, fontconfig, harfbuzz, pango, libpng, libjpeg-turbo"
-
 TERMUX_PKG_BUILD_DEPENDS="ninja, vulkan-headers, xorgproto, libglvnd-dev, sdl2, llvm, libllvm"
 
 # ---------------- SOURCE ----------------
@@ -24,19 +22,46 @@ termux_step_get_source() {
 
 # ---------------- PRE-CONFIGURE ----------------
 termux_step_pre_configure() {
+    # aarch64 setjmp workaround
+    if [ "$TERMUX_ARCH" = "aarch64" ]; then
+        rm -f "$TERMUX_PKG_BUILDDIR/_lib"
+        mkdir -p "$TERMUX_PKG_BUILDDIR/_lib"
+
+        cd "$TERMUX_PKG_BUILDDIR"
+        mkdir -p _setjmp-aarch64
+        pushd _setjmp-aarch64
+        mkdir -p private
+        local s
+        for s in $TERMUX_PKG_BUILDER_DIR/setjmp-aarch64/{setjmp.S,private-*.h}; do
+            local f=$(basename "$s")
+            cp "$s" "./${f/-//}"
+        done
+        $CC $CFLAGS $CPPFLAGS -I. setjmp.S -c
+        $AR cru "$TERMUX_PKG_BUILDDIR/_lib/libandroid-setjmp.a" setjmp.o
+        popd
+
+        LDFLAGS+=" -L$TERMUX_PKG_BUILDDIR/_lib -l:libandroid-setjmp.a"
+    fi
+
     termux_setup_meson
     termux_setup_ninja
+
+    if [ "$TERMUX_ON_DEVICE_BUILD" = "true" ]; then
+        termux_setup_python_pip
+        pip install pyyaml
+    else
+        pip install --break-system-packages pyyaml
+    fi
 }
 
 # ---------------- CONFIGURE (MESON) ----------------
 termux_step_configure() {
-    CFLAGS+=" -DANDROID -DXBOX=1"
-    CXXFLAGS+=" $CFLAGS"
-    LDFLAGS+=" -llog -landroid-shmem"
+    CPPFLAGS+=" -Wno-alloca"
+    CFLAGS+=" $CPPFLAGS"
+    CXXFLAGS+=" $CPPFLAGS"
 
-    meson setup build \
+    MESON_COMMON_FLAGS="\
         --prefix=$TERMUX_PREFIX \
-        --cross-file=$TERMUX_MESON_CROSSFILE \
         -Ddefault_targets=i386-softmmu \
         -Dopengl=enabled \
         -Degl=enabled \
@@ -58,8 +83,17 @@ termux_step_configure() {
         -Dtrace_backends=nop \
         -Dstack_protector=disabled \
         -Dwerror=false \
-        -Db_c_args="-DXBOX=1 -DANDROID \
-        -Db_cpp_args="-DXBOX=1 -DANDROID
+        -Db_c_args=-DXBOX=1,-DANDROID \
+        -Db_cpp_args=-DXBOX=1,-DANDROID"
+
+    if [ "$TERMUX_ON_DEVICE_BUILD" = "true" ]; then
+        # On-device build: no cross file
+        LDFLAGS+=" -landroid-shmem -llog"
+        meson setup build $MESON_COMMON_FLAGS
+    else
+        # Host/cross build
+        meson setup build $MESON_COMMON_FLAGS --cross-file=$TERMUX_MESON_CROSSFILE
+    fi
 }
 
 # ---------------- BUILD ----------------
