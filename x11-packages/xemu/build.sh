@@ -16,7 +16,7 @@ TERMUX_PKG_BUILD_DEPENDS="ninja, vulkan-headers, xorgproto, libglvnd-dev, sdl2, 
 termux_step_get_source() {
     mkdir -p "$TERMUX_PKG_SRCDIR"
     cd "$TERMUX_PKG_SRCDIR"
-	git clone --recurse-submodules https://github.com/xemu-project/xemu.git
+	git clone --recurse-submodules --depth 1 https://github.com/xemu-project/xemu.git
 	cd xemu
 }
 
